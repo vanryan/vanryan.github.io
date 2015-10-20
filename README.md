@@ -1,6 +1,6 @@
 vanryan.github.io
 =================
 
-There is a UFO HERE!
+From Van Ryan.
 
-**Great literatures are about to unfold here.**
+Un Traceur.

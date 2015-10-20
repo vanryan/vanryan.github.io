@@ -1,3 +1,32 @@
-name: Van Ryan
+# Site settings
+title: "Van Ryan"
+email: zvonryan@gmail.com
+description: "Van Ryan"
+baseurl: ""
+url: "http://vanryan.github.io/"
+title_description: "張先 -- Un Traceur."
+title_image: "http://www.gravatar.com/avatar/303eded29e6097783c2a56d4116a8505?s=500&d=mm"
+#google_analytics: "UA-"
+disqus_account: vanryan
+github_repository: https://github.com/vanryan/vanryan.github.io
+addthis_id: ra-56267400bf7d5668
+#post_limit: 5
+
+# Social usernames/URLs
+twitter_username: #
+github_username:  vanryan
+linkedin_link: #
+google_plus_link: #
+stackoverflow_link: #
+
+
+# Footer
+footer_left: "<i class=\"fa fa-bolt \"></i><i class=\"fa fa-bolt \"></i><i class=\"fa fa-bolt \"></i>"
+footer_right: "&lt;vanryan&gt; on <a href=\"https://github.com/vanryan/vanryan.github.io\">Github</a> &nbsp;<i class=\"fa fa-github-alt\"></i>"
+
+# Build settings
 markdown: redcarpet
-pygments: true
+redcarpet:
+  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript"]
+permalink: pretty
+exclude: [vendor]
