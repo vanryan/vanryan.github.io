@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  "Van Ryan Here"
+title:  "Xian Z Here"
 date:   2014-04-26 22:18:18
-author: Van Ryan
-summary: Van Ryan - Un Traceur
+author: Xian Z
+summary: Xian Z - Un Traceur
 categories: 'about'
 thumbnail: gravatar
 encoding: "utf-8"
