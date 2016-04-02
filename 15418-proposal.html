@@ -18,17 +18,17 @@ encoding: "utf-8"
 
 
 <h4>Summary</h4>
-<p class="418parag">
+<p class="418-parag">
 We are building a framework for deep learning using the Halide image processing language. It is aimed for both training and inferring on deep neural networks, and is expected to achieve high performance on both CPU and GPU.
 </p>
 
 <h4>Background</h4>
-<p class="418parag">
+<p class="418-parag">
 Lots of modern machine learning applications, such as AlphaGo, are using Convolutional Neural Networks (CNNs) for classification tasks. However, the performance of training and inferring with CNNs really matters. For huge data set and a large CNN configuration, training can take several days, making it urgent to speed up the training process. Also, in real-time applications, such as Apple Siri, the inference time is also expected to be short, so that the delay will be tolerable for app users. 
 </p>
 
 
-<p class="418parag">
+<p class="418-parag">
 Halide is a language and compiler for optimizing parallelism, locality, and re-computation in image processing pipelines. Since it provides many scheduling interfaces to handle matrices, it is a great source for CNN implementation, where the intermediate results are also matrices. Therefore, by carefully scheduling CNN training and inference with Halide, an obvious speedup is expected.
 </p>
 
