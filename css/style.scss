@@ -34,10 +34,27 @@ $screen-lg-min: 1200px;
 
 
 /* 15-418 Project Pages */
-.parag-418 {
+p.parag-418 {
 	line-height: 180%;
-	padding:15px 0
+	padding:15px 0;
+	font-size: 15px;
+	text-align: left;
 }
+
+div.parag-418 {
+	line-height: 180%;
+	padding:15px 0;
+	font-size: 15px;
+	text-align: left;
+
+
+}
+
+ul.parag-418 li {
+	font-style:italic;
+	text-indent:15px;
+	font-size:12px;
+	}
 
 /* Globals */
 

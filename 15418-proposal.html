@@ -13,7 +13,7 @@ encoding: "utf-8"
 
               <h2>15-418 Final Project Proposal</h2>
 
-              <h3>Bromide</h3>
+              <h3>Bromide -- A Deep Learning Framework In Halide</h3>
               <br/>
               <a href="{{ site.baseurl }}/15418">back to project</a>
               <br/>
@@ -38,29 +38,36 @@ Halide is a language and compiler for optimizing parallelism, locality, and re-c
 
 <h4>Challenge</h4>
 <p class="parag-418">
-Halide is a language targeted at image processing, which provides a set of computation scheduling methods to help programmers exploit data locality and achieve higher performance when writing parallel programs. However, since it is not designed for deep learning methods, it does not have intrinsic support for the typical computation patterns or algorithms in deep learning, for example, convolution.  Nowadays there are many a mature (sort of) implementation of deep learning methods. For example, Caffe, is a frequently seen framework in the world of deep neural networks. One feature about Caffe is that it takes advantage of a fast matrix multiplication library like Intel's MKL when running convolutional neural networks by using matrix multiplications. However, breaking down the convolutional layers to matrix multiplications might not produce a desirable performance speedup since Halide does not natively support matrix multiplication. We think using FFT could avoid both the original complex convolution computations and the need for fast matrix multiplication. Although doing the DFT and its inverse will take some time but this might be better than the matrix multiplications way. So the challenge here is how to schedule and tune the program using Halide to achieve admissible performance on CPU or/and GPU, compared to the current matrix multiplication approach.  Another challenge would be to implement a set of complex modern deep neural networks using Halide. Halide, as a image processing language, is likely to have some constraints or limitation in the elevation of performance in the deep learning algorithms. It might be a challenge to use its scheduling methods to achieve desirable speedup.
+Halide is a language targeted at image processing, which provides a set of computation scheduling methods to help programmers exploit data locality and achieve higher performance when writing parallel programs. However, since it is not designed for deep learning methods, it does not have intrinsic support for the typical computation patterns or algorithms in deep learning, for example, convolution.  Nowadays there are many a mature (sort of) implementation of deep learning methods. <br/><br/>For example, Caffe, is a frequently seen framework in the world of deep neural networks. One feature about Caffe is that it takes advantage of a fast matrix multiplication library like Intel's MKL when running convolutional neural networks by using matrix multiplications. However, breaking down the convolutional layers to matrix multiplications might not produce a desirable performance speedup since Halide does not natively support matrix multiplication. We think using FFT could avoid both the original complex convolution computations and the need for fast matrix multiplication. Although doing the DFT and its inverse will take some time but this might be better than the matrix multiplications way. So the challenge here is how to schedule and tune the program using Halide to achieve admissible performance on CPU or/and GPU, compared to the current matrix multiplication approach.  Another challenge would be to implement a set of complex modern deep neural networks using Halide. Halide, as a image processing language, is likely to have some constraints or limitation in the elevation of performance in the deep learning algorithms. It might be a challenge to use its scheduling methods to achieve desirable speedup.
 </p>
 
+
 <h4>Resources</h4>
-<ul>
+<div class="parag-418">
+<ul class="parag-418">
 <li>Halide source code: <a href="https://github.com/halide/Halide">https://github.com/halide/Halide. </a></li>
 <li>Ragan-Kelley, J., Barnes, C., Adams, A., Paris, S., Durand, F. and Amarasinghe, S., 2013. Halide: a language and compiler for optimizing parallelism, locality, and recomputation in image processing pipelines. ACM SIGPLAN Notices, 48(6), pp.519-530. </li>
 <li>(Can we get to learn about the automatic scheduling Halide program from Ravi Mullapudi?)</li>
 </ul>
+</div>
 
 <h4>Goals and Deliverables</h4>
 
+<div class="parag-418">
 <h5>Plan to achieve:</h5>
 <p class="parag-418">
-High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. <br/>
-High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance.  <br/>
+High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. </p>
+<p class="parag-418">
+High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance. </p>
+<p class="parag-418">
 To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three methods can be used: 
-<ul>
+</p>
+<ul class="parag-418">
 <li>Direct convolution with Halide scheduling.</li>
 <li>Converting convolution to matrix multiplication, and scheduling with Halide. </li>
 <li>Converting convolution to dot product by FFT, and scheduling with Halide.</li>
 </ul>
-</p>
+
 
 <h5>Hope to achieve:</h5>
 <p class="parag-418">
@@ -72,14 +79,18 @@ Analyzing the advantages and disadvantages of Halide, both in a general way and 
 <p class="parag-418">
 We would like to show a graphical interpretation of our scheduling methods for the networks we are implementing, as well as the corresponding results of them compared to naive (according to the original algorithms, without too much organization, but somewhat optimized) C++ code and Caffe (if applicable). The results would be composed of running time given input data and computation resources used.
 </p>
+</div>
 
 <h4>Platform</h4>
-<ul>
+<div class="parag-418">
+<ul class="parag-418">
 <li>GHC Machines: ghc[47-84].ghc.andrew.cmu.edu (Intel® Core™ i7-4785T Processor, 4 cores, 8 threads, SSE4.1/4.2, AVX 2.0)</li>
 <li>ghc41.ghc.andrew.cmu.edu (CUDA cores: 2304)</li>
 </ul>
+</div>
 
 <h4>Schedule</h4>
+<div class="parag-418">
 <h5>4/1 - 4/8: </h5>
 
 Get familiar with Halide, by studying the toturials;<br/>
@@ -95,7 +106,7 @@ Select some modern deep neural networks and implement them with Halide.
 <h5>
 4/23 - 4/29:</h5>
 Compare performance with Caffe on CPU and GPU platforms, in terms of training and inference.
-              
+</div>           
 
             </div>
 
