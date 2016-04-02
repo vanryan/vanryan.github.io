@@ -13,7 +13,7 @@ encoding: "utf-8"
 
               <h2>15-418 Final Project Proposal</h2>
 
-              
+              <h3>Bromide</h3>
               
 
 
@@ -49,12 +49,14 @@ Halide is a language targeted at image processing, which provides a set of compu
 
 <h5>Plan to achieve:</h5>
 <p class="418-parag">
-High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. 
-High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance. 
-To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three ways can be done: 
-Direct convolution with Halide scheduling.
-Converting convolution to matrix multiplication, and scheduling with Halide. 
-Converting convolution to dot product by FFT, and scheduling with Halide.
+High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. <br/>
+High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance.  <br/>
+To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three methods can be used: 
+<ul>
+<li>Direct convolution with Halide scheduling.</li>
+<li>Converting convolution to matrix multiplication, and scheduling with Halide. </li>
+<li>Converting convolution to dot product by FFT, and scheduling with Halide.</li>
+</ul>
 </p>
 
 <h5>Hope to achieve:</h5>
