@@ -25,8 +25,8 @@ footer_left: "<i class=\"fa fa-bolt \"></i><i class=\"fa fa-bolt \"></i><i class
 footer_right: "&lt;vanryan&gt; on <a href=\"https://github.com/vanryan/vanryan.github.io\">Github</a> &nbsp;<i class=\"fa fa-github-alt\"></i>"
 
 # Build settings
-markdown: redcarpet
-redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript"]
+markdown: kramdown
+#redcarpet:
+#  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript"]
 permalink: pretty
 exclude: [vendor]
