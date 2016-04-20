@@ -27,7 +27,7 @@ encoding: "utf-8"
 A set of different layers (fully-connected, convolution, activation, pooling etc.) that will be used in neural networks are implemented in Halide, as well as some helper 'layers'. A major action for each layer in inferencing is feed forward, so we modularized  the implementation by taking out some functionalities (such as matrix flattening for fully-connected layer) as individual layers. 
 </p>
 <p class="parag-418">
-A important objective of the first phase of the project is to learn and explore the capabilities of Halide and adjust the predetermined plan and goals of the project. Given Halide is a language that present users with succinct and obvious syntax to make decisions on the scheduling, i.e., trading off between memory efficiency, redundant work and parallelism, a lot of tuning is there to elevate the performance. However, for the same reason, since you have to make decisions yourself, doing inferencing on a number of deep networks would cost a serious amount of work, thus we decide to keep the training part off the table for this project. 
+An important objective of the first phase of the project is to learn and explore the capabilities of Halide and adjust the predetermined plan and goals of the project. Given Halide is a language that presents users with succinct and obvious syntax to make decisions on the scheduling, i.e., trading off between memory efficiency, redundant work and parallelism, a lot of tuning is there to elevate the performance. However, for the same reason, since you have to make decisions yourself, doing inferencing on a number of deep networks would cost a serious amount of work, thus we decide to keep the training part off the table for this project. 
 </p>
 
 <h5>General Adjustment:</h5>
