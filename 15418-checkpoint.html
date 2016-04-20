@@ -51,16 +51,19 @@ High performance training on CNN (native CPU and GPU). It includes computing the
 To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three methods can be used: 
 </p>
 <ul class="parag-418">
-<li>Direct convolution with Halide scheduling.</li>
+<li>Direct convolution with (some) Halide scheduling.</li>
 <li>Converting convolution to matrix multiplication, and scheduling with Halide. </li>
 <li><del>Converting convolution to dot product by FFT, and scheduling with Halide.</del> (Well, this might still be implemented, but only for comparsion)</li>
 </ul>
 
+<p class="parag-418">
+Implementing a set of modern deep convolutional networks based on the classic implementations of inferring <del>and training</del> on CNN.<br/>
+Analyzing the advantages and disadvantages of Halide, both in a general way and by comparing to Caffe (and some other implementations), to see what can be done to improve it (for example the support for Xeon Phi).
+</p>
 
 <h5>Hope to achieve:</h5>
 <p class="parag-418">
-Implementing a set of modern deep convolutional networks based on the classic implementations of inferring and training on CNN
-Analyzing the advantages and disadvantages of Halide, both in a general way and by comparing to Caffe (and some other implementations), to see what can be done to improve it (for example the support for Xeon Phi).
+Achieve better performance than Caffe.
 </p>
 
 <h5>Demo:</h5>
@@ -69,23 +72,52 @@ We would like to show a graphical interpretation of our scheduling methods for t
 </p>
 </div>
 
-<h4>Schedule (Revised)</h4>
+<h4>Schedule (Revised)</h4>Compare performance with Caffe on CPU and GPU platforms, in terms of training and inference.
 <div class="parag-418">
-<h5>4/1 - 4/8: </h5>
+<h5>
+4/20 - 4/22:</h5>
+<ul class="parag-418">
+<li>Decide which networks to use and get the training results (Ruizhou)</li>
+<li>Learning the network configuration files from Caffe (Xian)</li>
+</ul>
 
-Get familiar with Halide, by studying the toturials;<br/>
-Implement the inference process of CNN with Halide: including convolution layers with scheduling and FFT-based approaches, and pooling, normalization, activation and fully connected layers.
+<h5>
+4/23 - 4/24:</h5>
+<ul class="parag-418">
+<li>Implement the network(s) using the result of the training of Caffe (Ruizhou)</li>
+<li>Implement basic scheduling on convolution (Xian)</li>
+</ul>
 
 <h5>
-4/9 - 4/15:</h5>
-Implement training process of CNN with Halide;<br/>
-Trying using the automatic scheduling tool by Ravi on our program.
+4/25 - 4/28:</h5>
+<ul class="parag-418">
+<li>Implement the network(s) using the result of the training of Caffe (Ruizhou)</li>
+<li>Implement scheduling on convolution and tuning (Xian)</li>
+</ul>
+
 <h5>
-4/16 - 4/22:</h5>
-Select some modern deep neural networks and implement them with Halide. 
+4/29 - 5/1:</h5>
+<ul class="parag-418">
+<li>Exploring parallelism details in Halide w.r.t. the project (Ruizhou)</li>
+<li>Implement scheduling on other layers and tuning (Xian)</li>
+<li>Run some tests on current networks (Ruizhou, Xian)</li>
+</ul>
+
 <h5>
-4/23 - 4/29:</h5>
-Compare performance with Caffe on CPU and GPU platforms, in terms of training and inference.
+5/2 - 5/5:</h5>
+<ul class="parag-418">
+<li>Continue the scheduling and tuning task on (Ruizhou, Xian)</li>
+<li>Run tests on current networks and do comparisons (Ruizhou, Xian)</li>
+</ul>
+
+<h5>
+5/5 - 5/9:</h5>
+<ul class="parag-418">
+<li>Doing further tests and corresponding adjustments (Ruizhou, Xian)</li>
+<li>Preparation of demo (Ruizhou, Xian)</li>
+</ul>
+
+
 </div>          
 
 
