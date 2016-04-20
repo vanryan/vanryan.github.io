@@ -1,0 +1,64 @@
+---
+layout: default
+encoding: "utf-8"
+---
+
+
+<div class="container-fluid index">
+    <div class="row">
+
+          <div class="col-md-12 main content-panel">
+
+            <div class="articles">
+
+              <h2>15-418 Final Project Checkpoint</h2>
+
+              <h3>Bromide -- A Deep Learning Framework In Halide</h3>
+              <br/>
+              <a href="{{ site.baseurl }}/15418">back to project</a>
+              <br/>
+              <br/>
+
+<h4>Summary</h4>
+<p class="parag-418">
+We are building a framework for deep learning using <a href="http://halide-lang.org/">the Halide image processing language</a>. It is aimed for both training and inferring on deep neural networks, and is expected to achieve high performance on both CPU and GPU.
+</p>
+
+<h4>Goals and Deliverables</h4>
+
+<div class="parag-418">
+<h5>Plan to achieve:</h5>
+<p class="parag-418">
+High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. </p>
+</div>
+
+
+<h4>Schedule (Revised)</h4>
+<div class="parag-418">
+<h5>4/1 - 4/8: </h5>
+
+Get familiar with Halide, by studying the toturials;<br/>
+Implement the inference process of CNN with Halide: including convolution layers with scheduling and FFT-based approaches, and pooling, normalization, activation and fully connected layers.
+
+<h5>
+4/9 - 4/15:</h5>
+Implement training process of CNN with Halide;<br/>
+Trying using the automatic scheduling tool by Ravi on our program.
+<h5>
+4/16 - 4/22:</h5>
+Select some modern deep neural networks and implement them with Halide. 
+<h5>
+4/23 - 4/29:</h5>
+Compare performance with Caffe on CPU and GPU platforms, in terms of training and inference.
+</div>          
+
+
+
+
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
