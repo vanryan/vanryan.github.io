@@ -20,18 +20,54 @@ encoding: "utf-8"
               <br/>
 
 <h4>Summary</h4>
+
+<div class="parag-418">
+<h5>Crossed out so far:</h5>
 <p class="parag-418">
-We are building a framework for deep learning using <a href="http://halide-lang.org/">the Halide image processing language</a>. It is aimed for both training and inferring on deep neural networks, and is expected to achieve high performance on both CPU and GPU.
+A set of different layers (fully-connected, convolution, activation, pooling etc.) that will be used in neural networks are implemented in Halide, as well as some helper 'layers'. A major action for each layer in inferencing is feed forward, so we modularized  the implementation by taking out some functionalities (such as matrix flattening for fully-connected layer) as individual layers. 
+</p>
+<p class="parag-418">
+A important objective of the first phase of the project is to learn and explore the capabilities of Halide and adjust the predetermined plan and goals of the project. Given Halide is a language that present users with succinct and obvious syntax to make decisions on the scheduling, i.e., trading off between memory efficiency, redundant work and parallelism, a lot of tuning is there to elevate the performance. However, for the same reason, since you have to make decisions yourself, doing inferencing on a number of deep networks would cost a serious amount of work, thus we decide to keep the training part off the table for this project. 
 </p>
 
-<h4>Goals and Deliverables</h4>
+<h5>General Adjustment:</h5>
+<p class="parag-418">
+Given the small amount of time and busy schedule, a framework for deep learning might not be feasible before the end of this semester. The objective now would be to implement deep networks in Halide efficiently by making use of Halide's scheduling capabilities. We are considering training networks through Caffe, of which the output will be used to build the deep network that we are going to build and perform inferencing in. 
+</p>
+<p class="parag-418">
+At first the way we want to address convolution is using FFT, however after some investigation and tests, it might not be a very good idea to opt to solve convolution instead of matrix multiplication in the frequency domain given most kernels are very small. We plan to spend some time on tuning the matrix multiplication part of the project based on the networks we are using in the next few days.
+</p>
+</div>
+
+<h4>Goals and Deliverables (Revised)</h4>
 
 <div class="parag-418">
 <h5>Plan to achieve:</h5>
 <p class="parag-418">
 High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. </p>
-</div>
+<p class="parag-418"><del>
+High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance. </del></p>
+<p class="parag-418">
+To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three methods can be used: 
+</p>
+<ul class="parag-418">
+<li>Direct convolution with Halide scheduling.</li>
+<li>Converting convolution to matrix multiplication, and scheduling with Halide. </li>
+<li><del>Converting convolution to dot product by FFT, and scheduling with Halide.</del> (Well, this might still be implemented, but only for comparsion)</li>
+</ul>
 
+
+<h5>Hope to achieve:</h5>
+<p class="parag-418">
+Implementing a set of modern deep convolutional networks based on the classic implementations of inferring and training on CNN
+Analyzing the advantages and disadvantages of Halide, both in a general way and by comparing to Caffe (and some other implementations), to see what can be done to improve it (for example the support for Xeon Phi).
+</p>
+
+<h5>Demo:</h5>
+<p class="parag-418">
+We would like to show a graphical interpretation of our scheduling methods for the networks we are implementing, as well as the corresponding results of them compared to naive (according to the original algorithms, without too much organization, but somewhat optimized) C++ code and Caffe (if applicable). The results would be composed of running time given input data and computation resources used.
+</p>
+</div>
 
 <h4>Schedule (Revised)</h4>
 <div class="parag-418">
