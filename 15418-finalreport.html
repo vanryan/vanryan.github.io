@@ -35,11 +35,41 @@ Lots of modern-day machine learning applications, such as AlphaGo, are using Con
 
 <p class="parag-418">For testing purpose, we are using <a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a> which is designed to do classification towards <a href="http://image-net.org/">ImageNet</a>. The structure of AlexNet is illustrated as bewlow:</p>
 
- <img src="{{ site.baseurl }}/resources/alexnet.png" alt="alexnet" height="42" width="142" /> 
+<img src="{{ site.baseurl }}/resources/alexnet.png" alt="alexnet" height="312" width="600" /> 
+
+
+<br/><br/>
 
 <h5>Halide</h5>
 <p class="parag-418">
 Halide is a language and compiler for optimizing parallelism, locality, and re-computation in image processing pipelines. Since it provides many scheduling interfaces to handle matrices, it is a great source for CNN implementation, where the intermediate results are also matrices. Therefore, by carefully scheduling CNN training and inference with Halide, an obvious speedup is expected.
+</p>
+
+<h4>Methodology</h4>
+<p class="parag-418">
+We would introduce the details of the implementation (majorly scheduling) by each layer. Input layer, flatten layer, activation layer and drop layer are fairly straightforward thus we would mainly discuss other layers about their scheduling.
+</p>
+
+<p class="parag-418">
+There are mainly two versions of our code, and, intuitively, version 2 is the more tuned version. The following discussion will include the comparison of the two versions.
+</p>
+
+<h5>Convolutional Layer</h5>
+<p class="parag-418">
+Version 1:<br/>
+We are mainly doing intuitive implementation as well as using Halide::sum() and compute_root() in version 1. In convolutional layer, each pixel of an output map is computed according to the definition as the sum of weight of a filter window. 
+</p>
+
+<h5>Fully Connected Layer</h5>
+<p class="parag-418">
+</p>
+
+<h5>Pooling Layer</h5>
+<p class="parag-418">
+</p>
+
+<h5>Loss Layer</h5>
+<p class="parag-418">
 </p>
 
 <h4>Challenge</h4>
