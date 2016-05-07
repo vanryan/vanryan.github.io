@@ -142,10 +142,6 @@ Pooling layer is similar to the convolution layer, in that there's a window movi
 But we also notice that, pooling doesn't take a large proportion in the overall latency. Therefore, we simply used the built-in reduction function max, and vectorized it by SIMD. We didn't choose to use multi-threading, because the overhead is not worthwhile. In our observation, pooling layer of bromide can achieve 10x speedup compared to caffe implementation.
 </p>
 
-<h5>Loss Layer</h5>
-<p class="parag-418">
-</p>
-
 <div class="par-blankline-10"></div>
 <h4>Challenges met and TO-DOs</h4>
 <p class="parag-418">
