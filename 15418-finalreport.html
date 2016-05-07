@@ -57,7 +57,7 @@ Halide is a language and compiler for optimizing parallelism,locality, and re-co
 <div class="par-blankline-10"></div>
 <h4>What we did (Results)</h4>
 <p class="parag-418">
-We have implemented this inference program which is tested towards MNIST (LeNet) and <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet"> AlexNet (ImageNet)</a>, and it is compared against <a href="https://github.com/BVLC/caffe">Caffe</a> (testing of the network). Luckily, we have achieved better performance than Caffe in our limited tested scenarios. All of these tests are conducted on a machine that has 2 processors (Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz). The following figures and data generally use Caffe as their counterpart for comparison. Our implementation is referred to as <b>"bromide"</b>.
+We have implemented this inference program which is tested towards MNIST (LeNet) and <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet"> AlexNet (ImageNet)</a>, and it is compared against <a href="https://github.com/BVLC/caffe">Caffe</a> (testing of the network). Luckily, we have achieved better performance than Caffe in our limited tested scenarios. All of these tests are conducted on a machine that has 2 processors (Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz). The following figures and data generally use Caffe as their counterpart for comparison. Our implementation is referred to as <span class="brom">"bromide"</span>.
 </p>
 
 <p class="parag-418">
@@ -72,7 +72,7 @@ The <span class="imp">latency</span> of LeNet and AlexNet is illustrated as belo
 <br/><br/>
 
 <p class="parag-418">
-As we can see from the figures above, for the batchsize 16 of LeNet, the speedup (in terms of throughput) of Bromide over Caffe is roughly <b>3.04x</b>, and the average latency is <b>21% (LeNet) and 26% (AlexNet) better</b> than Caffe. Although these are not very significant, the results surely give us some hope in the power of scheduling in Halide.
+As we can see from the figures above, for the batchsize 16 of LeNet, the speedup (in terms of throughput) of Bromide over Caffe is roughly <span class="imp">3.04x</span>, and the average latency is <span class="imp">21% (LeNet) and 26% (AlexNet) better</span> than Caffe. Although these are not very significant, the results surely give us some hope in the power of scheduling in Halide.
 </p>
 
 <div class="par-blankline-10"></div>
@@ -86,7 +86,7 @@ There are mainly two versions of our code, and, intuitively, version 2 is the mo
 
 <h5>Basic Settings</h5>
 <p class="parag-418">
-Every layer has a member called <b>cnnff</b>, standing for the collection of the feedforward values. It generally has 4 dimensions, <b>(x, y, z, w)</b>, corresponding to the column-index, row-index, map-index (3rd dimension), and batch size. All those layers are written in separate files and they are welded in the main function to build networks for testing. Scheduling is performed inside the layers.
+Every layer has a member called <span class="imp2">cnnff</span>, standing for the collection of the feedforward values. It generally has 4 dimensions, <span class="imp2">(x, y, z, w)</span>, corresponding to the column-index, row-index, map-index (3rd dimension), and batch size. All those layers are written in separate files and they are welded in the main function to build networks for testing. Scheduling is performed inside the layers.
 </p>
 
 
@@ -101,10 +101,10 @@ Version 1:
 </p>
 <blockquote class="parag-418">conv_basic(x, y, z, w) = Halide::sum(last_layer.cnnff(x + dom.x, y + dom.y, dom.z + group_idx * input_group_size, w) * kernels(dom.x, dom.y, dom.z, map_idx + group_idx * group_size) + bias(z));</blockquote>
 <p class="parag-418">
-We are mainly doing intuitive implementation as well as using <b>Halide::sum()</b> and <b>Func.ompute_root()</b> in version 1. In convolutional layer, each pixel of an output map is computed according to the definition as the weighted sum of a filter window.
+We are mainly doing intuitive implementation as well as using <span class="imp2">Halide::sum()</span> and <span class="imp2">Func.ompute_root()</span> in version 1. In convolutional layer, each pixel of an output map is computed according to the definition as the weighted sum of a filter window.
 </p>
 <p class="parag-418">
-The <b>Halide::sum()</b> function is used for inline reduction over the given domain (in this case, the domain would be 3-d, corresponding to the filter window of convolution). Func.compute_root() in Halide is used to compute the <b>Func</b> ahead of the following program (<b>Funcs</b> will be combined inline in Halide if there is no functions like compute_root() or compute_at() to explicitly order it to perform computation to the point). Func is a Halide class standing for a pipleline stage, which is a pure function that defines what value each pixel should have, similar to a computed image.
+The <span class="imp2">Halide::sum()</span> function is used for inline reduction over the given domain (in this case, the domain would be 3-d, corresponding to the filter window of convolution). Func.compute_root() in Halide is used to compute the <span class="imp2">Func</span> ahead of the following program (<span class="imp2">Funcs</span> will be combined inline in Halide if there is no functions like compute_root() or compute_at() to explicitly order it to perform computation to the point). Func is a Halide class standing for a pipleline stage, which is a pure function that defines what value each pixel should have, similar to a computed image.
 </p>
 
 <p class="parag-418">
@@ -123,7 +123,7 @@ input_.compute_at(cnnff, z_i);<br/>
 
 </blockquote>
 <p class="parag-418">
-Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop r.z before y_outer or z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable and parallelize the outermost one. Unrolling is performed at two innermost domain variables since they have a typically small range. The <b>compute_at(func, var)</b> function performs computation of func for every unique value of var, which would enable us to compute the block of inner loop variables (y_i and z_i) to actually instantiate the above scheduling.
+Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop r.z before y_outer or z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable and parallelize the outermost one. Unrolling is performed at two innermost domain variables since they have a typically small range. The <span class="imp2">compute_at(func, var)</span> function performs computation of func for every unique value of var, which would enable us to compute the block of inner loop variables (y_i and z_i) to actually instantiate the above scheduling.
 </p>
 
 <h5>Fully Connected Layer</h5>
