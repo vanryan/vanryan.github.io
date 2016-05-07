@@ -40,16 +40,18 @@ Lots of modern-day machine learning applications, such as AlphaGo, are using Con
 <p class="parag-418">For testing purpose, we are using <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a> (a database of handwritten digits and we use a typical CNN, <a href="http://yann.lecun.com/exdb/lenet/">LeNet</a> to perform inference on it) and <a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a>(which is designed to do classification towards <a href="http://image-net.org/">ImageNet</a>). 
 
 <p class="parag-418">
-The structure of LeNet is illustrated as below:</p>
+The structure of <span class="imp">LeNet</span> is illustrated as below:</p>
 <img src="{{ site.baseurl }}/resources/lenet.png" alt="lenet" height="152" width="600" /> 
+<p class="parag-418"> The LeNet that we use is mainly composed of the following layers by order: <i>conv, pooling, conv, pooling, fully-connected, relu, fully-connected, softmax.</i></p>
 
-<br/><br/>
 
 <p class="parag-418">
-The structure of AlexNet is illustrated as below:</p>
+The structure of <span class="imp">AlexNet</span> is illustrated as below:</p>
 
 <img src="{{ site.baseurl }}/resources/alexnet.png" alt="alexnet" height="252" width="600" /> 
+<p class="parag-418"> The AlexNet that we use is mainly composed of the following layers by order: <i>conv, relu, norm, pooling, conv, relu, norm, pooling, conv, relu, conv, relu, conv, relu, pooling, fully-connected, relu, drop, fully-connected, relu, drop, fully-connected, softmax.</i></p>
 
+<!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
 <h5><a href="http://halide-lang.org/">Halide</a></h5>
 <p class="parag-418">
