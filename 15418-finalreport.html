@@ -23,15 +23,16 @@ encoding: "utf-8"
 
 <h4>Summary</h4>
 <p class="parag-418">
-We are building a framework for deep learning using <a href="http://halide-lang.org/">the Halide image processing language</a>. It is aimed for both training and inferring on deep neural networks, and is expected to achieve high performance on both CPU and GPU.
+We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is tuned to be fast(-er than Caffe) on a single machine using CPU.
 </p>
 
 <h4>Background</h4>
+<h5>CNN</h5>
 <p class="parag-418">
-Lots of modern machine learning applications, such as AlphaGo, are using Convolutional Neural Networks (CNNs) for classification tasks. However, the performance of training and inferring with CNNs really matters. For huge data set and a large CNN configuration, training can take several days, making it urgent to speed up the training process. Also, in real-time applications, such as Apple Siri, the inference time is also expected to be short, so that the delay will be tolerable for app users. 
+Lots of modern-day machine learning applications, such as AlphaGo, are using Convolutional Neural Networks (CNNs) for classification tasks. Therefore, the performance of training and inference with CNNs is fairly important. For huge data sets and large CNN configurations, training can take several days, making it meaningful to speed up the training process. Besides, in real-time applications, such as Apple Siri, the time spent in inference is also expected to be short, so that the delay will be tolerable or more satisfactory for users.
 </p>
 
-
+<h5>Halide</h5>
 <p class="parag-418">
 Halide is a language and compiler for optimizing parallelism, locality, and re-computation in image processing pipelines. Since it provides many scheduling interfaces to handle matrices, it is a great source for CNN implementation, where the intermediate results are also matrices. Therefore, by carefully scheduling CNN training and inference with Halide, an obvious speedup is expected.
 </p>
