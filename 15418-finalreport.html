@@ -33,7 +33,7 @@ We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolution
 Lots of modern-day machine learning applications, such as AlphaGo, are using Convolutional Neural Networks (CNNs) for classification tasks. Therefore, the performance of training and inference with CNNs is fairly important. For huge data sets and large CNN configurations, training can take several days, making it meaningful to speed up the training process. Besides, in real-time applications, such as Apple Siri, the time spent in inference is also expected to be short, so that the delay will be tolerable or more satisfactory for users.
 </p>
 
-<p class="parag-418">For testing purpose, we are using <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a> and <a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a> which is designed to do classification towards <a href="http://image-net.org/">ImageNet</a>. 
+<p class="parag-418">For testing purpose, we are using <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a> (a database of handwritten digits and we use a typical CNN, <a href="http://yann.lecun.com/exdb/lenet/">LeNet</a> to perform inference on it) and <a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks">AlexNet</a>(which is designed to do classification towards <a href="http://image-net.org/">ImageNet</a>). 
 
 <p class="parag-418">
 The structure of LeNet is illustrated as below:</p>
@@ -53,6 +53,7 @@ The structure of AlexNet is illustrated as below:</p>
 Halide is a language and compiler for optimizing parallelism,locality, and re-computation in image processing pipelines. Since it provides many scheduling interfaces to handle matrices, it is a great source for CNN implementation, where the intermediate results are also matrices. Therefore, by carefully scheduling CNN training and inference with Halide, an obvious speedup is expected.
 </p>
 
+<br/>
 <h4>What we did (Results)</h4>
 <p class="parag-418">
 We have implemented this inference program which is tested towards MNIST (LeNet) and <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet"> AlexNet (ImageNet)</a>, and it is compared against <a href="https://github.com/BVLC/caffe">Caffe</a> (testing of the network). Luckily, we have achieved better performance than Caffe in our limited tested scenarios. All of these tests are conducted on a machine that has 2 processors (Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz). The following figures and data generally use Caffe as their counterpart for comparison. Our implementation is referred to as <b>"bromide"</b>.
@@ -73,7 +74,7 @@ The <b>latency</b> of LeNet and AlexNet is illustrated as below: (<b>latency</b>
 As we can see from the figures above, for the batchsize 16 of LeNet, the speedup (in terms of throughput) of Bromide over Caffe is roughly <b>3.04x</b>, and the average latency is <b>21% (LeNet) and 26% (AlexNet) better</b> than Caffe. Although these are not very significant, the results surely give us some hope in the power of scheduling in Halide.
 </p>
 
-
+<br/>
 <h4>How we did it (Methodology)</h4>
 <p class="parag-418">
 We would introduce the details of the implementation (majorly scheduling) by each layer. Flatten layer, activation layer and drop layer are fairly straightforward thus we would mainly discuss other layers about their scheduling.
@@ -126,6 +127,10 @@ Convolution layer is a meaningful implementation exploiting the power of schedul
 
 <h5>Fully Connected Layer</h5>
 <p class="parag-418">
+Fully connected layer is basically a matrix multiplication. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
+</p>
+<p class="parag-418">
+Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of SIMD and multi-threading implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function sum built in Halide.
 </p>
 
 <h5>Pooling Layer</h5>
@@ -136,6 +141,7 @@ Convolution layer is a meaningful implementation exploiting the power of schedul
 <p class="parag-418">
 </p>
 
+<br/>
 <h4>Challenges met and TO-DOs</h4>
 <p class="parag-418">
 Halide is a language targeted at image processing, which provides a set of computation scheduling methods to help programmers exploit data locality and achieve higher performance when writing parallel programs. However, since it is not designed for deep learning methods, it does not have intrinsic support for the typical computation patterns or algorithms in deep learning, for example, convolution.  Nowadays there are many a mature (sort of) implementation of deep learning methods. <br/><br/>For example, Caffe, is a frequently seen framework in the world of deep neural networks. One feature about Caffe is that it takes advantage of a fast matrix multiplication library like Intel's MKL when running convolutional neural networks by using matrix multiplications. However, breaking down the convolutional layers to matrix multiplications might not produce a desirable performance speedup since Halide does not natively support matrix multiplication. We think using FFT could avoid both the original complex convolution computations and the need for fast matrix multiplication. Although doing the DFT and its inverse will take some time but this might be better than the matrix multiplications way. So the challenge here is how to schedule and tune the program using Halide to achieve admissible performance on CPU or/and GPU, compared to the current matrix multiplication approach.  Another challenge would be to implement a set of complex modern deep neural networks using Halide. Halide, as a image processing language, is likely to have some constraints or limitation in the elevation of performance in the deep learning algorithms. It might be a challenge to use its scheduling methods to achieve desirable speedup.
@@ -179,11 +185,6 @@ To demonstrate, CNN inferring consumes most time on the convolution layers. So o
 </ul>
 
 
-<h5>Hope to achieve:</h5>
-<p class="parag-418">
-Implementing a set of modern deep convolutional networks based on the classic implementations of inferring and training on CNN
-Analyzing the advantages and disadvantages of Halide, both in a general way and by comparing to Caffe (and some other implementations), to see what can be done to improve it (for example the support for Xeon Phi).
-</p>
 
 <h5>Demo:</h5>
 <p class="parag-418">
@@ -191,32 +192,7 @@ We would like to show a graphical interpretation of our scheduling methods for t
 </p>
 </div>
 
-<h4>Platform</h4>
-<div class="parag-418">
-<ul class="parag-418">
-<li>GHC Machines: ghc[47-84].ghc.andrew.cmu.edu (Intel® Core™ i7-4785T Processor, 4 cores, 8 threads, SSE4.1/4.2, AVX 2.0)</li>
-<li>ghc41.ghc.andrew.cmu.edu (CUDA cores: 2304)</li>
-</ul>
-</div>
-
-<h4>Schedule</h4>
-<div class="parag-418">
-<h5>4/1 - 4/8: </h5>
-
-Get familiar with Halide, by studying the toturials;<br/>
-Implement the inference process of CNN with Halide: including convolution layers with scheduling and FFT-based approaches, and pooling, normalization, activation and fully connected layers.
-
-<h5>
-4/9 - 4/15:</h5>
-Implement training process of CNN with Halide;<br/>
-Trying using the automatic scheduling tool by Ravi on our program.
-<h5>
-4/16 - 4/22:</h5>
-Select some modern deep neural networks and implement them with Halide. 
-<h5>
-4/23 - 4/29:</h5>
-Compare performance with Caffe on CPU and GPU platforms, in terms of training and inference.
-</div>           
+          
 
             </div>
 
