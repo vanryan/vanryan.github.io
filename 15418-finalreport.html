@@ -20,12 +20,12 @@ encoding: "utf-8"
               <br/>
 
 
-
+<!--&&&&&& divider &&&&&&-->
 <h4>Summary</h4>
 <p class="parag-418">
 We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is scheduled to be <span class="imp">fast(-er than Caffe, up to 3x)</span> on a single machine using CPU.
 </p>
-
+<!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
 <h4>Background</h4>
 <br/>
@@ -53,7 +53,7 @@ The structure of AlexNet is illustrated as below:</p>
 <p class="parag-418">
 Halide is a language and compiler for optimizing parallelism,locality, and re-computation in image processing pipelines. Since it provides many scheduling interfaces to handle matrices, it is a great source for CNN implementation, where the intermediate results are also matrices. Therefore, by carefully scheduling CNN training and inference with Halide, an obvious speedup is expected.
 </p>
-
+<!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
 <h4>What we did (Results)</h4>
 <p class="parag-418">
@@ -75,8 +75,28 @@ The <span class="imp">latency</span> of LeNet and AlexNet is illustrated as belo
 As we can see from the figures above, for the batchsize 16 of LeNet, the speedup (in terms of throughput) of Bromide over Caffe is roughly <span class="imp">3.04x</span>, and the average latency is <span class="imp">21% (LeNet) and 26% (AlexNet) better</span> than Caffe. Although these are not very significant, the results surely give us some hope in the power of scheduling in Halide.
 </p>
 
+
+
+<!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
-<h4>How we did it (Methodology)</h4>
+<h4>How we did it (A: Methodology)</h4>
+
+<p class="parag-418">
+Usually, when we implement a CNN, we would like to build it layer by layer. One problem lying here is that every time we transmit the intermidiate results from one layer to its successor layer, we need to do a read and a write. 
+</p><p class="parag-418">
+This seems natural, but sometimes unnecessary. Take activation layer as an example, it's doing per-element computation, such as applying a ReLU function to all elements in the intermediate maps. Actually, this procedure can be embedded in the either the previous layer or the next layer, to avoid a read and a write. This loop-fusion method can be easily impelemented using Halide.  
+</p><p class="parag-418">
+Another thing worth noting is that the proper use of L3 cache can greatly increase the performance. When the data need to be reused, we can benefit from letting the data sit in the cache and wait for being called next time. Convolution layer, pooling layer, normalization layer and fully-connected layer are probably involved with data reuse. Therefore, tiling the maps can be a reasonable way. 
+</p><p class="parag-418">
+Also, we are supposed to make good use of SIMD and multi-threading techniques, based on their different characteristics. When using SIMD, we hope there's less divergence. Fortunately, most of the computations in CNN don't include braches. Therefore, we can use SIMD either in the inner loop or the outer loop. When using multi-threading, we hope there's less synchronization. Also, we note that the total number of threads in a machine is far less than the actual parallelizable units. To reduce synchronization, it's better to put multi-threading at the outer loop of the embedded loops. 
+</p><p class="parag-418">
+Furthermore, other scheduling approaches, such as tiling, unrolling, and reordering, can be applied here, depending on the specific layers and map sizes.
+</p>
+
+
+<!--&&&&&& divider &&&&&&-->
+<div class="par-blankline-10"></div>
+<h4>How we did it (B: Details)</h4>
 <p class="parag-418">
 We would introduce the details of the implementation (majorly scheduling) by each layer. Flatten layer, activation layer and drop layer are fairly straightforward thus we would mainly discuss other layers about their scheduling.
 </p>
@@ -139,7 +159,7 @@ Halide::RDom dom(0, last_layer.size[0]);<br/>
 Fully connected layer is basically a <span class="imp2">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
 </p>
 <p class="parag-418">
-Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of SIMD and multi-threading implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function <span class="imp">sum()</span> built in Halide.
+Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of <span class="imp2">SIMD</span> and <span class="imp2">multi-threading</span> implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function <span class="imp">sum()</span> built in Halide.
 </p>
 
 <h5>Pooling Layer</h5>
@@ -158,12 +178,14 @@ Halide::Func sub_maps("sub_maps");<br/>
 </blockquote>
 
 <p class="parag-418">
-Pooling layer is similar to the convolution layer, in that there's a window moving above the maps, and doing a reduction at each time. Therefore, similar optimization can be used in pooling.
+Pooling layer is similar to the convolution layer, in that there is a window that traverses the maps, and performs <span class="imp2">reduction</span> at each time. Therefore, similar optimization (similar to the above) can be used in pooling.
 </p>
 <p class="parag-418">
-But we also notice that, pooling doesn't take a large proportion in the overall latency. Therefore, we simply used the built-in reduction function max, and vectorized it by SIMD. We didn't choose to use multi-threading, because the overhead is not worthwhile. In our observation, pooling layer of bromide can achieve 10x speedup compared to caffe implementation.
+But we also notice that, pooling doesn't take a large proportion in the overall latency. Therefore, we simply used the built-in reduction function <span class="imp2">max</span>, and vectorized it by SIMD. We didn't choose to use multi-threading, because the overhead is not worthwhile. In our observation, pooling layer of bromide can achieve <span class="imp">10x</span> speedup compared to caffe implementation.
 </p>
 
+
+<!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
 <h4>Challenges met and TO-DOs</h4>
 <p class="parag-418">
@@ -180,7 +202,7 @@ There are many ways to approach the convolution operation.
 </div>
 
 
-
+<!--&&&&&& divider &&&&&&-->
 <h4>Resources</h4>
 <div class="parag-418">
 <ul class="parag-418">
@@ -190,6 +212,7 @@ There are many ways to approach the convolution operation.
 </ul>
 </div>
 
+<!--&&&&&& divider &&&&&&-->
 <h4>Goals and Deliverables</h4>
 
 <div class="parag-418">
@@ -208,7 +231,7 @@ To demonstrate, CNN inferring consumes most time on the convolution layers. So o
 </ul>
 
 
-
+<!--&&&&&& divider &&&&&&-->
 <h5>Demo:</h5>
 <p class="parag-418">
 We would like to show a graphical interpretation of our scheduling methods for the networks we are implementing, as well as the corresponding results of them compared to naive (according to the original algorithms, without too much organization, but somewhat optimized) C++ code and Caffe (if applicable). The results would be composed of running time given input data and computation resources used.
