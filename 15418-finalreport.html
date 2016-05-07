@@ -23,7 +23,7 @@ encoding: "utf-8"
 
 <h4>Summary</h4>
 <p class="parag-418">
-We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is scheduled to be <b>fast(-er than Caffe, up to 3x)</b> on a single machine using CPU.
+We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is scheduled to be <span class="imp">fast(-er than Caffe, up to 3x)</span> on a single machine using CPU.
 </p>
 
 <div class="par-blankline-10"></div>
@@ -61,12 +61,12 @@ We have implemented this inference program which is tested towards MNIST (LeNet)
 </p>
 
 <p class="parag-418">
-The <b>throughput</b> of LeNet is illustrated as below:</p>
+The <span class="imp">throughput</span> of LeNet is illustrated as below:</p>
 <img src="{{ site.baseurl }}/resources/lenet_throughput.jpg" alt="lenet" height="362" width="600" /> 
 <br/><br/>
 
 <p class="parag-418">
-The <b>latency</b> of LeNet and AlexNet is illustrated as below: (<b>latency</b> here stands for the time to perform inference on a single input image)
+The <span class="imp">latency</span> of LeNet and AlexNet is illustrated as below: (<span class="imp">latency</span> here stands for the time to perform inference on a single input image)
 </p>
 <img src="{{ site.baseurl }}/resources/latency.jpg" alt="latency" height="352" width="600" /> 
 <br/><br/>
@@ -128,7 +128,7 @@ Convolution layer is a meaningful implementation exploiting the power of schedul
 
 <h5>Fully Connected Layer</h5>
 <p class="parag-418">
-Fully connected layer is basically a matrix multiplication. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
+Fully connected layer is basically a <span class="imp">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
 </p>
 <p class="parag-418">
 Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of SIMD and multi-threading implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function sum built in Halide.
@@ -136,6 +136,10 @@ Also, for both matrix-vector multiplication and matrix-matrix multiplication, we
 
 <h5>Pooling Layer</h5>
 <p class="parag-418">
+Pooling layer is similar to the convolution layer, in that there's a window moving above the maps, and doing a reduction at each time. Therefore, similar optimization can be used in pooling.
+</p>
+<p class="parag-418">
+But we also notice that, pooling doesn't take a large proportion in the overall latency. Therefore, we simply used the built-in reduction function max, and vectorized it by SIMD. We didn't choose to use multi-threading, because the overhead is not worthwhile. In our observation, pooling layer of bromide can achieve 10x speedup compared to caffe implementation.
 </p>
 
 <h5>Loss Layer</h5>
