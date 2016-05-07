@@ -217,29 +217,11 @@ The future work will include allowing the program to adaptively select the best 
 </ul>
 </div>
 
-<!--&&&&&& divider &&&&&&-->
-<h4>Goals and Deliverables</h4>
-
-<div class="parag-418">
-<h5>Plan to achieve:</h5>
-<p class="parag-418">
-High performance inferring on CNN (native CPU and GPU). It includes convolution, pooling, normalization, activation, and fully-connected layers. We will try improving the performance of forwarding these layers with Halide. </p>
-<p class="parag-418">
-High performance training on CNN (native CPU and GPU). It includes computing the derivatives of parameters in convolution, pooling, normalization, activation, and fully-connected layers. Again, we will use Halide to increase the performance. </p>
-<p class="parag-418">
-To demonstrate, CNN inferring consumes most time on the convolution layers. So our focus will be on improving the performance of this layer. Three methods can be used: 
-</p>
-<ul class="parag-418">
-<li>Direct convolution with Halide scheduling.</li>
-<li>Converting convolution to matrix multiplication, and scheduling with Halide. </li>
-<li>Converting convolution to dot product by FFT, and scheduling with Halide.</li>
-</ul>
-
 
 <!--&&&&&& divider &&&&&&-->
 <h5>Demo:</h5>
 <p class="parag-418">
-We would like to show a graphical interpretation of our scheduling methods for the networks we are implementing, as well as the corresponding results of them compared to naive (according to the original algorithms, without too much organization, but somewhat optimized) C++ code and Caffe (if applicable). The results would be composed of running time given input data and computation resources used.
+We would like to show a graphical interpretation of our scheduling methods for the networks we are implementing, as well as the corresponding results of them compared to Caffe. The results would be composed of running time (or latency, throughput) given input data and computation resources used.
 </p>
 </div>
 
