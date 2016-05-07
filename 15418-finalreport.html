@@ -23,7 +23,7 @@ encoding: "utf-8"
 
 <h4>Summary</h4>
 <p class="parag-418">
-We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is tuned to be fast(-er than Caffe) on a single machine using CPU.
+We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">Convolutional Neural Networks</a> inference program using <a href="http://halide-lang.org/">the Halide image processing language</a> which is tuned to be <b>fast(-er than Caffe)</b> on a single machine using CPU.
 </p>
 
 <h4>Background</h4>
@@ -46,7 +46,6 @@ The structure of AlexNet is illustrated as below:</p>
 
 <img src="{{ site.baseurl }}/resources/alexnet.png" alt="alexnet" height="312" width="600" /> 
 
-
 <br/><br/>
 
 <h5><a href="http://halide-lang.org/">Halide</a></h5>
@@ -56,18 +55,23 @@ Halide is a language and compiler for optimizing parallelism,locality, and re-co
 
 <h4>What we did (Results)</h4>
 <p class="parag-418">
-We have implemented this inference program which is tested towards MNIST (LeNet) and <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet"> AlexNet (ImageNet)</a>, and it is compared against <a href="https://github.com/BVLC/caffe">Caffe</a> (testing of the network). Luckily, we have achieved better performance than Caffe in our limited tested scenarios. The following figures and data generally use Caffe as their counterpart for comparison. Our implementation is referred to as <b>"bromide"</b>.
+We have implemented this inference program which is tested towards MNIST (LeNet) and <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet"> AlexNet (ImageNet)</a>, and it is compared against <a href="https://github.com/BVLC/caffe">Caffe</a> (testing of the network). Luckily, we have achieved better performance than Caffe in our limited tested scenarios. All of these tests are conducted on a machine that has 2 processors (Intel(R) Core(TM) i7-4790 CPU @ 3.60GHz). The following figures and data generally use Caffe as their counterpart for comparison. Our implementation is referred to as <b>"bromide"</b>.
 </p>
 
 <p class="parag-418">
-The throughput of LeNet is illustrated as below:</p>
+The <b>throughput</b> of LeNet is illustrated as below:</p>
 <img src="{{ site.baseurl }}/resources/lenet_throughput.jpg" alt="lenet" height="362" width="600" /> 
 <br/><br/>
 
 <p class="parag-418">
-The latency of LeNet and AlexNet is illustrated as below:</p>
+The <b>latency</b> of LeNet and AlexNet is illustrated as below: (<b>latency</b> here stands for the time to perform inference on a single input image)
+</p>
 <img src="{{ site.baseurl }}/resources/latency.jpg" alt="latency" height="352" width="600" /> 
 <br/><br/>
+
+<p class="parag-418">
+As we can see from the figures above, for the batchsize 16 of LeNet, the speedup (in terms of throughput) of Bromide over Caffe is roughly <b>3.04x</b>, and the average latency is <b>21% (LeNet) and 26% (AlexNet) better</b> than Caffe. Although these are not very significant, the results surely give us some hope in the power of scheduling in Halide.
+</p>
 
 
 <h4>How we did it (Methodology)</h4>
@@ -117,7 +121,7 @@ input_.compute_at(cnnff, z_i);<br/>
 
 </blockquote>
 <p class="parag-418">
-Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop r.z before y_outer or z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable and parallelize the outermost one. Unrolling is performed at two innermost domain variables since they have a typically small range. The <b>compute_at()</b> function
+Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop r.z before y_outer or z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable and parallelize the outermost one. Unrolling is performed at two innermost domain variables since they have a typically small range. The <b>compute_at(func, var)</b> function performs computation of func for every unique value of var, which would enable us to compute the block of inner loop variables (y_i and z_i) to actually instantiate the above scheduling.
 </p>
 
 <h5>Fully Connected Layer</h5>
