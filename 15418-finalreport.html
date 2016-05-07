@@ -127,14 +127,36 @@ Convolution layer is a meaningful implementation exploiting the power of schedul
 </p>
 
 <h5>Fully Connected Layer</h5>
+<blockquote class="parag-418">
+Halide::RDom dom(0, last_layer.size[0]);<br/>
+      cnnff(x, y, z, w) = Halide::sum(last_layer.cnnff(dom.x, y, z, w) * weights(dom.x, x)) + bias(x); <br/>
+      cnnff.parallel(w);<br/>
+          cnnff.vectorize(x, 8);<br/>
+          cnnff.compute_root();<br/>
+</blockquote>
+
 <p class="parag-418">
-Fully connected layer is basically a <span class="imp">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
+Fully connected layer is basically a <span class="imp2">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
 </p>
 <p class="parag-418">
-Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of SIMD and multi-threading implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function sum built in Halide.
+Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of SIMD and multi-threading implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function <span class="imp">sum()</span> built in Halide.
 </p>
 
 <h5>Pooling Layer</h5>
+<blockquote class="parag-418">
+Halide::Func sub_maps("sub_maps");<br/>
+                Halide::RDom dom(0, pool_x, 0, pool_y);<br/>
+                if(pool_func == "max") {<br/>
+                &nbsp;&nbsp;        sub_maps(x, y, z, w) = Halide::maximum(last_layer.cnnff(x + dom.x, y + dom.y, z, w));<br/>
+                }else if(pool_func == "average") {<br/>
+                &nbsp;&nbsp;        sub_maps(x, y, z, w) = Halide::sum(last_layer.cnnff(x + dom.x, y + dom.y, z, w)) / (pool_x * pool_y);<br/>
+                }<br/>
+                cnnff(x, y, z, w) = sub_maps(x * stride_x - pad_x, y * stride_y - pad_y, z, w);<br/>
+        cnnff.vectorize(x, 8);<br/>
+                cnnff.compute_root();<br/>
+
+</blockquote>
+
 <p class="parag-418">
 Pooling layer is similar to the convolution layer, in that there's a window moving above the maps, and doing a reduction at each time. Therefore, similar optimization can be used in pooling.
 </p>
