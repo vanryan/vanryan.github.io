@@ -30,7 +30,7 @@ We have implemented a general <a href="https://en.wikipedia.org/wiki/Convolution
 </p>
 <!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
-<h4>Background</h4>
+<h4>Why we did this (Background)</h4>
 <br/>
 <h5><a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">CNN</a></h5>
 <p class="parag-418">
@@ -50,6 +50,13 @@ The structure of <span class="imp">AlexNet</span> is illustrated as below:</p>
 
 <img src="{{ site.baseurl }}/resources/alexnet.png" alt="alexnet" height="252" width="600" /> 
 <p class="parag-418"> The AlexNet that we use is mainly composed of the following layers by order: <i>conv, relu, norm, pooling, conv, relu, norm, pooling, conv, relu, conv, relu, conv, relu, pooling, fully-connected, relu, drop, fully-connected, relu, drop, fully-connected, softmax.</i></p>
+
+<!--&&&&&& divider &&&&&&-->
+<div class="par-blankline-10"></div>
+<h5>Caffe</h5>
+<p class="parag-418">
+<a href="http://caffe.berkeleyvision.org/">Caffe</a> is a deep learning framework currently widely used to both train and test CNN. It is known for its speed, modularity and clear expressions and settings of networks and relevant processes. In our project, Caffe is selected to be a benchmark for us to compete against in terms of speed.
+</p>
 
 <!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
@@ -103,7 +110,7 @@ As we can see from the figures above, for the batchsize 16 of LeNet, the speedup
   <th>Layer</th><th>Time(ms)</th><th>%</th>
 </tr>
 <tr>
-  <td>conv</td><td>436.2</td><td>8</td>
+  <td>conv</td><td><span class="imp2">436.2</span></td><td>8</td>
 </tr>
 <tr>
   <td>constant_exterior</td><td>375.8</td><td>7</td>
@@ -115,7 +122,7 @@ As we can see from the figures above, for the batchsize 16 of LeNet, the speedup
   <td>sum#1</td><td>114.9</td><td>2</td>
 </tr>
 <tr>
-  <td>conv</td><td>502.1</td><td>10</td>
+  <td>conv</td><td><span class="imp2">502.1</span></td><td>10</td>
 </tr>
 <tr>
   <td>constant_exterior</td><td>348.2</td><td>7</td>
@@ -127,19 +134,19 @@ As we can see from the figures above, for the batchsize 16 of LeNet, the speedup
   <td>sum#2</td><td>71.7</td><td>1</td>
 </tr>
 <tr>
-  <td>conv</td><td>266.3</td><td>5</td>
+  <td>conv</td><td><span class="imp2">266.3</span></td><td>5</td>
 </tr>
 <tr>
   <td>constant_exterior</td><td>280.0</td><td>5</td>
 </tr>
 <tr>
-  <td>conv</td><td>409.5</td><td>8</td>
+  <td>conv</td><td><span class="imp2">409.5</span></td><td>8</td>
 </tr>
 <tr>
   <td>constant_exterior</td><td>467.2</td><td>9</td>
 </tr>
 <tr>
-  <td>conv</td><td>342.5</td><td>6</td>
+  <td>conv</td><td><span class="imp2">342.5</span></td><td>6</td>
 </tr>
 <tr>
   <td>constant_exterior</td><td>284.0</td><td>5</td>
@@ -154,6 +161,9 @@ As we can see from the figures above, for the batchsize 16 of LeNet, the speedup
   <td>sum#6(fully)</td><td>207.2</td><td>4</td>
 </tr>
 </table>
+
+<p class="parag-418"><i>conv: convolutional layer. norm: normalization layer. constant_exterior & sum: some halide built-in functions. The last fully-connected layers spent most of their time on sum().</i></p>
+
 <div class="par-blankline-10"></div>
 <p class="parag-418">We can tell that most time-consuming layers, as we expected, is convolutional layers and fully connected layers. constant_exterior mostly take place in convolution layers and the last 3 sum functions are in fully-connected layers. Therefore, what we can do is to further tune the convolutional layer and fully connected layer. One thing we noticed when we compared to Caffe is that, our convolutional layer outperforms Caffe a lot, while Caffe's fully-connected layer performs better than Bromide's. This is not unexpected, because there is still a lot to do in the scheduling of <span class="imp2">fully-connected </span> layer. If we can futher reduce the time there (getting rid of sum() reduction and performing more fine-tuning), the performance of bromide would be a lot more desirable.</p>
 
@@ -170,10 +180,86 @@ This seems natural, but sometimes unnecessary. Take activation layer as an examp
 </p><p class="parag-418">
 Another thing worth noting is that the proper use of L3 cache can greatly increase the performance. When the data need to be reused, we can benefit from letting the data sit in the cache and wait for being called next time. Convolution layer, pooling layer, normalization layer and fully-connected layer are probably involved with data reuse. Therefore, tiling the maps can be a reasonable way. 
 </p><p class="parag-418">
-Also, we are supposed to make good use of SIMD and multi-threading techniques, based on their different characteristics. When using SIMD, we hope there's less divergence. Fortunately, most of the computations in CNN don't include braches. Therefore, we can use SIMD either in the inner loop or the outer loop. When using multi-threading, we hope there's less synchronization. Also, we note that the total number of threads in a machine is far less than the actual parallelizable units. To reduce synchronization, it's better to put multi-threading at the outer loop of the embedded loops. 
+Also, we made an effort to make good use of SIMD and multi-threading techniques, based on their different characteristics. When using SIMD, we hope there's less divergence. Fortunately, most of the computations in CNN don't include braches. Therefore, we can use SIMD either in the inner loop or the outer loop. Since multi-threading and scheduling were to take place, we performed vectorization in the inner loop. When using multi-threading, we hope there's less synchronization. We chose to do multi-threading on the outermost loop(s) in Bromide and it turns out to be a good choice. Also, we note that the total number of threads in a machine is far less than the actual parallelizable units. To reduce synchronization, it's better to put multi-threading at the outer loop of the embedded loops. 
 </p><p class="parag-418">
-Furthermore, other scheduling approaches, such as tiling, unrolling, and reordering, can be applied here, depending on the specific layers and map sizes.
+Furthermore, other scheduling approaches, such as tiling, unrolling, and reordering, are applied here, depending on the specific layers and map sizes. It took us a great amount of time to tune the scheduling for the layers (mainly convolutional layers). 
 </p>
+
+<h5>Hints from Caffe</h5>
+<p class="parag-418">We actually profiled Caffe to try to get some hints to perform our optimization. This is an example of batch size 64 on AlexNet: </p>
+<table class="parag-418">
+<tr>
+  <th>Layer</th><th>Time(ms)</th>
+</tr>
+<tr>
+  <td>conv1</td><td><span class="imp2">671.791</span></td>
+</tr>
+<tr>
+  <td>relu1</td><td>14.302</td>
+</tr>
+<tr>
+  <td>norm1</td><td>529.359</td>
+</tr>
+<tr>
+  <td>pool1</td><td>56.879</td>
+</tr>
+<tr>
+  <td>conv2</td><td><span class="imp2">1246.95</span></td>
+</tr>
+<tr>
+  <td>relu2</td><td>9.052</td>
+</tr>
+<tr>
+  <td>norm2</td><td>343.957</td>
+</tr>
+<tr>
+  <td>pool2</td><td>39.369</td>
+</tr>
+<tr>
+  <td>conv3</td><td><span class="imp2">1022.71</span></td>
+</tr>
+<tr>
+  <td>relu3</td><td>3.168</td>
+</tr>
+<tr>
+  <td>conv4</td><td><span class="imp2">791.008</span></td>
+</tr>
+<tr>
+  <td>relu4</td><td>3.296</td>
+</tr>
+<tr>
+  <td>conv5</td><td><span class="imp2">542.841</span></td>
+</tr>
+<tr>
+  <td>relu5</td><td>2.103</td>
+</tr>
+<tr>
+  <td>pool5</td><td>9.796</td>
+</tr>
+<tr>
+  <td>fully-connected6</td><td>196.115</td>
+</tr>
+<tr>
+  <td>relu6</td><td>0.202</td>
+</tr>
+<tr>
+  <td>drop6</td><td>1.854</td>
+</tr>
+<tr>
+  <td>fully-connected7</td><td>86.68</td>
+</tr>
+<tr>
+  <td>relu7</td><td>0.203</td>
+</tr>
+<tr>
+  <td>drop7</td><td>1.857</td>
+</tr>
+<tr>
+  <td>fully-connected8</td><td>21.642</td>
+</tr>
+</table>
+<div class="par-blankline-10"></div>
+<p class="parag-418">As we can tell from the table, most of the time are spent on convolutional layers. Caffe transformed convolution into matrix multiplication, where it can make use of well-tuned implementations like Intel's MKL to accelerate the speed. However, we think this can be improved since Caffe's method will generate a lot of memory traffic and do a lot of redundat. Therefore, performing well-tuned scheduling based on the definition of convolution might give us speedup, which is the most significant part of our implementation.</p>
 
 
 <!--&&&&&& divider &&&&&&-->
@@ -182,15 +268,15 @@ Furthermore, other scheduling approaches, such as tiling, unrolling, and reorder
 <p class="parag-418">
 We would introduce the details of the implementation (majorly scheduling) by each layer. Flatten layer, activation layer and drop layer are fairly straightforward thus we would mainly discuss other layers about their scheduling.
 </p>
-<p class="parag-418">
-There are mainly two versions of our code, and, intuitively, version 2 is the more tuned version. The following discussion might include the comparison of the two versions.
-</p>
 
 <h5>Basic Settings</h5>
 <p class="parag-418">
 Every layer has a member called <span class="imp2">cnnff</span>, standing for the collection of the feedforward values. It generally has 4 dimensions, <span class="imp2">(x, y, z, w)</span>, corresponding to the column-index, row-index, map-index (3rd dimension), and batch size. All those layers are written in separate files and they are welded in the main function to build networks for testing. Scheduling is performed inside the layers.
 </p>
 
+<p class="parag-418">
+Kernels of convolution are traversed using <span class="imp2">Halide::RDom</span>, which is denoted as dom in our program and used to construct a multi-dimensional reduction domain. If the kernel has 3 dimensions, it will be denoted by dom.x, dom.y, dom.z.
+</p>
 
 <h5>Input Layer</h5>
 <p class="parag-418">
@@ -198,6 +284,8 @@ We process the input data (trained weights) using a similar way to Caffe. The mo
 </p>
 
 <h5>Convolutional Layer</h5>
+
+
 <p class="parag-418">
 Version 1:
 </p>
@@ -213,19 +301,18 @@ The <span class="imp2">Halide::sum()</span> function is used for inline reductio
 Version 2:<br/>
 </p>
 <blockquote class="parag-418">
-  
 input_ = Halide::BoundaryConditions::constant_exterior(last_layer.cnnff, 0, 0, last_layer.size[0], 0, last_layer.size[1]);<br/>
 cnnff(x, y, z, w) = bias(z);<br/>
-cnnff(x, y, z, w) += kernels(r.x, r.y, r.z % input_group_size, z) * input_(x * stride_x + r.x - pad_x, y * stride_y + r.y - pad_y, r.z, w);<br/>
-cnnff.update().split(y, y_o, y_i, 32).split(z, z_o, z_i, 32); <br/>
-cnnff.update().reorder(y_i, z_i, r.z, y_o, z_o).vectorize(x, 8); <br/>
+cnnff(x, y, z, w) += kernels(dom.x, dom.y, dom.z, z) * input_(x * stride_x + dom.x - pad_x, y * stride_y + dom.y - pad_y, dom.z, w);<br/>
+cnnff.update().split(y, y_outer, y_inner, y_size).split(z, z_outer, z_inner, z_size); <br/>
+cnnff.update().reorder(y_inner, z_inner, y_outer, dom.z, z_outer).vectorize(x, 8); <br/>
 cnnff.update().parallel(w);<br/>
-cnnff.update().unroll(r.x).unroll(r.y);<br/>
-input_.compute_at(cnnff, z_i);<br/>
-
+cnnff.update().unroll(dom.x).unroll(dom.y);<br/>
+input_.compute_at(cnnff, z_inner);<br/>
 </blockquote>
+
 <p class="parag-418">
-Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop r.z before y_outer or z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable and parallelize the outermost one. Unrolling is performed at two innermost domain variables since they have a typically small range. The <span class="imp2">compute_at(func, var)</span> function performs computation of func for every unique value of var, which would enable us to compute the block of inner loop variables (y_i and z_i) to actually instantiate the above scheduling.
+Convolution layer is a meaningful implementation exploiting the power of scheduling in Halide. We basically split y and z and reorder to get a tile, in order to find a point that reaches a good balance of memory traffic and locality which leads to a good performance. A typical tile would be loop over (from inner to outer) y_inner, y_outer, z_inner, z_outer, however, reordering the domain loop dom.z before (y_outer or) z_outer would led to a elevation of performance because of more locality. Vectorization, parallelism and unrolling were performed here as well. It is fairly intuitive to vectorize over the innermost variable (x) of cnnff and parallelize the outermost one. This is tested as well, we noticed a performance drop if on other layers. Unrolling is performed at two innermost domain variables (dom.x and dom.y) since they have a typically small range, which is the same reason why we did not put vectorization onto dom.x or dom.y. The <span class="imp2">compute_at(func, var)</span> function performs computation of func for every unique value of var, which would enable us to compute the block of inner loop variables (y_inner and z_inner) to actually instantiate the above scheduling and increase data locality and reduce redundant calculation. y_size and z_size are 2 parameters to tune towards the tile scheduling. They varies on different networks and different machines. On our settings, a good value would be 32 for both.
 </p>
 
 <h5>Fully Connected Layer</h5>
@@ -238,7 +325,7 @@ Halide::RDom dom(0, last_layer.size[0]);<br/>
 </blockquote>
 
 <p class="parag-418">
-Fully connected layer is basically a <span class="imp2">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplying vector. Otherwise, it's a multiplication between two matrices. Therefore, all the optimization methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
+Fully connected layer is basically a <span class="imp2">matrix multiplication</span>. If the batch size is equal to 1, it's a matrix multiplied by a vector. Otherwise, it's a multiplication between two matrices. A lot of the optimization/scheduling methods can be used here. Note that for the multiplication between a matrix and a vector, there's data reuse only in terms of the vector, but no data reuse for matrix. So a reasonable scheduling is row-by-row multiplication between matrix and vector. However, for the multiplication between two matrices, more sophisticated methods should be considered. In this project, we tried tiling the matrices into blocks, and tuning the block size to let it fit in the L3 cache. But we found that in our experiments, similarly good perforamnce can be achieved by the straighforward impelmentation of matrix multiplication. 
 </p>
 <p class="parag-418">
 Also, for both matrix-vector multiplication and matrix-matrix multiplication, we make use of <span class="imp2">SIMD</span> and <span class="imp2">multi-threading</span> implementation. We schedule them in different dimensions so that they can work together with less synchronization. We use multi-threading for the "batch" dimension, referring to any test image. And we use SIMD for each image. To compute each pixel, there's a inner-product between vectors. This procedure is done by the reduction function <span class="imp">sum()</span> built in Halide.
@@ -269,12 +356,31 @@ But we also notice that, pooling doesn't take a large proportion in the overall 
 
 <!--&&&&&& divider &&&&&&-->
 <div class="par-blankline-10"></div>
-<h4>Challenges met and TO-DOs</h4>
+<h4>Further Analysis of  Implementation</h4>
+<h5>General Challenges</h5>
 <p class="parag-418">
 Halide is a language targeted at image processing, which provides a set of computation scheduling methods to help programmers exploit data locality and achieve higher performance when writing parallel programs. However, since it is not designed for deep learning methods, it does not have intrinsic support for the typical computation patterns or algorithms in deep learning, for example, convolution.   Nowadays there are many a mature (sort of) implementation of deep learning methods. <br/><br/>
 For example, Caffe, is a frequently seen framework in the world of deep neural networks. One feature about Caffe is that it takes advantage of a fast matrix multiplication library like Intel's MKL when running convolutional neural networks by using matrix multiplications. However, breaking down the convolutional layers to matrix multiplications might not produce a desirable performance speedup since Halide does not natively support matrix multiplication. We thought of using FFT could avoid both the original complex convolution computations and the need for fast matrix multiplication. Although doing the DFT and its inverse will take some time but this might be better than the matrix multiplications way. Anyway, we think doing Fourier transform only makes sense when the weight has one or more huge dimesion(s), so the target that we aim here is to schedule and tune the program using Halide to achieve admissible performance on CPU or GPU. This really turned out to be tough.   It is not easy to understand all the scheduling capabilities provided by Halide. Although the syntax and configurations are made very intuitive and powerful, the conciseness takes a lot of effort to grasp the scheduling. It took us a lot of time to understand and test in terms of making tradeoff between memory bandwidth (locality), parallelism and doing redundant work, which are made more explicit by Halide.<br/><br/> 
 </p>
 
+<h5>Analysis of Implementation</h5>
+<p class="parag-418">
+One limitation of our speedup is that it is difficult to make the "best" <span class="imp2">trade-off</span> between redundant computation and memory accesses. If we make more synchronizations for the intermediate layers, more memory accesses will occur because we have to store the intermediate results and load these results later. However, if we make less synchronizations, we will probably do much redundant computation works. Therefore, a better trade-off between redundant computation and memory accesses has to be made in order to reduce latency. This trade-off is decided by how we schedule, such as split, reorder and fuse our loops. For example, the size of tiles are being heavily tested in our implementation. For example, a major drop takes place if the sizes of our tile in convolutional layers grow to be larger than the size of cache.
+</p><p class="parag-418">
+In our CNN implementations, <span class="imp2">synchronization</span> is made by "compute_root() or compute_at()". The intermediate results for a Func will be stored only when we schedule this Func with compute_root(). We basically set compute_root() for the Funcs that compute each output pixels with multiple pixels and parameters. But a more careful tuning here may help further increase the speed. At first we performed no compute_root on every layer, which results in a full inline version of CNN, leading to a performance of more than 200x slower than Caffe. However, it is not necessary to put compute_at() in every layer or put compute_at() at many dimensions. Doing too much stage synchronization would hurt the performance significantly as well. For example, applying compute_root() at every layer would lead to a 2~5x slower version of our code. We need to try to test more on this part in order to improve the performance.
+</p><p class="parag-418">
+Within each Func, we paralleled with <span class="imp2">multi-threading and SIMD</span> on different levels. We put the multi-threading at the outer loop to decrease the proportion of the scheduling overhead. And we use SIMD in the innermost loop of cnnff to reduce divergence, as well as make better use of locality. Also, we split the maps and reorder the for loops, to further deploy the locality. The implementation does not lack parallelism, but there might be some potential to better schedule the computation to fit the computating and memory resources of different machines and settings. The choice of levels to perform parallelism influences the performance to a great degree. For example, if we change the vectorization from x to higher or lower in the convolutional layer, we would notice a significant drop of performance as much as 3x. If we fuse z_outer and w in convolutional layer to do multi-threading, it does not change the performance but if we reorder the loops, such as reorder z_outer to be the outermost, the performance is hurt badly. This choice might limit our performance because we might not choose the best order and level of parallelism up to this point. 
+</p><p class="parag-418">
+The different <span class="imp2">setups of CNNs</span> has some influence on the performance of our implementation as well. For example, different sizes of convolution kernel would affect the performance of our choice of parallelism. If one dimension of the kernel size is bigger than the number of SIMD lanes, it might be better to do vectorization on the domain variables (dom.x and dom.y) rather than x. There is nothing like a best set of parameters and schedule for every network, but it is possible to find a generally better solution to some frequently used CNNs as LeNet and AlexNet. We need to admit that the variety of networks pose a difficulty and limitation on our elevation of performance.
+</p>
+
+<h5>Room of Elevation</h5>
+<p class="parag-418">
+As we can tell from the two tables of profiling Caffe and Bromide's runtime on AlexNet with a batchsize 64, we significantly outperformed Caffe on convolutional layers but did bad on <span class="imp2">fully-connected layers</span>. This is because we did not manage to get a nicely tuned scheduling of this layer up to now. Although in fully-connected layers, if using matrix multiplication, we no longer need to do so much copying and redundant work as in convolutional layers, which can better take the advantage of fine-tuned matrix multiplication, we still think it might be feasible to get the same or even better performance on this layer than Caffe if we can tune the schedule better and given that Halide provides a lot of optimization under the scheduling. Elevation of the performance of Bromide on fully-connected layers to the same level of Caffe would enable Bromide to have a much better general performance.
+</p>
+<p class="parag-418">Besides, the tuning of convolutional layers is not perfect. Using the current strategy, we think there is still a lot of space to explore, for example we could go with different tile size with different order of loops. Tuning these parameters towards the specification of the machine would further bring up the performance.</p>
+
+<h5>Future Work</h5>
 <div class="parag-418">
 There are a few ways to approach the convolution operation, we did not test the last two methods because we deem that they would not outperform the first one in our scenarios after our analysis, but for completeness, we would like to continue to compare our current implementaton with them:
 <ul class="parag-418-in">
@@ -285,9 +391,8 @@ There are a few ways to approach the convolution operation, we did not test the 
 </ul>
 </div>
 
-<h5>Future Work</h5>
 <p class="parag-418">
-The future work will include allowing the program to adaptively select the best scheduling strategy for each network and machine type. Currently, we have to differentiate the details of scheduling for LeNet and AlexNet, such as tiling and reordering. However, it would be a great step if the scheduling stategy can be automatically created for each application.
+Our future work will also include allowing the program to adaptively select a close to best scheduling strategy for each network and machine type. Currently, we have to differentiate the details of scheduling for LeNet and AlexNet, such as tiling and reordering. However, it would be a great step if the scheduling stategy can be automatically created for each application.
 </p>
 
 <!--&&&&&& divider &&&&&&-->
